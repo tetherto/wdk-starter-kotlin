@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import to.tether.wdk.core.WdkCore
@@ -75,10 +76,46 @@ class WalletViewModel(private val context: Context) : ViewModel() {
     private val _state = MutableStateFlow(WalletUiState())
     val state: StateFlow<WalletUiState> = _state.asStateFlow()
 
+    private val prefs = context.getSharedPreferences("wdk_wallet", Context.MODE_PRIVATE)
     private var wdkCore: WdkCore? = null
     private var encryptionKey = ""
     private var encryptedSeed = ""
     private var isRefreshingBalance = false
+
+    init {
+        val savedKey = prefs.getString("encryptionKey", null)
+        val savedSeed = prefs.getString("encryptedSeed", null)
+        if (!savedKey.isNullOrEmpty() && !savedSeed.isNullOrEmpty()) {
+            encryptionKey = savedKey
+            encryptedSeed = savedSeed
+            viewModelScope.launch {
+                update { copy(isLoading = true, statusText = "Restoring wallet...") }
+                try {
+                    val wdk = getOrCreateClient()
+                    wdk.initializeWDK(encryptionKey = encryptionKey, encryptedSeed = encryptedSeed, config = wdkConfig)
+                    update { copy(isWdkInitialized = true) }
+                    try { val ethAddr = wdk.getAddress(network = "sepolia"); update { copy(ethAddress = ethAddr) } } catch (_: Exception) {}
+                    try { val btcAddr = wdk.getAddress(network = "bitcoin"); update { copy(btcAddress = btcAddr) } } catch (_: Exception) {}
+                    update { copy(currentScreen = Screen.Home, isLoading = false, statusText = "") }
+                    fetchBalance()
+                } catch (e: Exception) {
+                    prefs.edit().clear().apply()
+                    encryptionKey = ""
+                    encryptedSeed = ""
+                    update { copy(isLoading = false, statusText = "") }
+                    showToast("Failed to restore wallet: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun saveCredentials() {
+        prefs.edit().putString("encryptionKey", encryptionKey).putString("encryptedSeed", encryptedSeed).apply()
+    }
+
+    private fun clearCredentials() {
+        prefs.edit().clear().apply()
+    }
 
     private val wdkConfig = """
     {
@@ -142,6 +179,7 @@ class WalletViewModel(private val context: Context) : ViewModel() {
                     encryptionKey = entropy.encryptionKey
                 )
                 val words = mnemonic.trim().split(" ")
+                saveCredentials()
                 update { copy(seedPhrase = words, currentScreen = Screen.Create, isLoading = false, statusText = "") }
             } catch (e: Exception) {
                 update { copy(isLoading = false, statusText = "") }
@@ -212,6 +250,7 @@ class WalletViewModel(private val context: Context) : ViewModel() {
                 val result = wdk.getSeedAndEntropyFromMnemonic(mnemonic = mnemonic)
                 encryptionKey = result.encryptionKey
                 encryptedSeed = result.encryptedSeedBuffer
+                saveCredentials()
 
                 wdk.initializeWDK(
                     encryptionKey = encryptionKey,
@@ -494,12 +533,14 @@ class WalletViewModel(private val context: Context) : ViewModel() {
             wdkCore = null
             encryptionKey = ""
             encryptedSeed = ""
+            clearCredentials()
             update {
                 WalletUiState()
             }
             showToast("Wallet deleted")
-            kotlinx.coroutines.delay(2000)
-            try { old?.close() } catch (_: Exception) {}
+            withContext(kotlinx.coroutines.Dispatchers.IO) {
+                try { old?.close() } catch (_: Exception) {}
+            }
         }
     }
 
@@ -544,12 +585,11 @@ class WalletViewModel(private val context: Context) : ViewModel() {
             val s = _state.value
             return if (s.sendNetwork == Network.ETH) {
                 val feeWei = s.quotedFeeEth?.let { BigDecimal(it) } ?: return "Estimating..."
-                val eth = feeWei.divide(BigDecimal("1000000000000000000"))
-                "~$eth ETH"
+                val gwei = feeWei.divide(BigDecimal("1000000000"))
+                "~${gwei.toPlainString()} Gwei"
             } else {
                 val feeSats = s.quotedFeeBtc?.let { BigDecimal(it) } ?: return "Estimating..."
-                val btc = feeSats.divide(BigDecimal("100000000"))
-                "~$btc BTC"
+                "~${feeSats.toPlainString()} sats"
             }
         }
 

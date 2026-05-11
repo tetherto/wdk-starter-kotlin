@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.delay
 
 // ===== WELCOME SCREEN =====
@@ -80,7 +81,7 @@ fun WelcomeScreen(vm: WalletViewModel) {
 
         Text("\uD83D\uDEE1", fontSize = 64.sp)
         Spacer(Modifier.height(16.dp))
-        Text("WDK Wallet", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("WDK Wallet", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(6.dp))
         Text(
             "Self custodial. Multi chain. Open source.",
@@ -262,7 +263,7 @@ fun HomeScreen(vm: WalletViewModel) {
         ) {
             Text("\uD83D\uDEE1", fontSize = 20.sp)
             Spacer(Modifier.width(8.dp))
-            Text("WDK Wallet", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("WDK Wallet", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.weight(1f))
             TestnetBadge()
         }
@@ -276,8 +277,8 @@ fun HomeScreen(vm: WalletViewModel) {
         ) {
             Text("Balances", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
-            Text(vm.formattedEthBalance, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-            Text(vm.formattedBtcBalance, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            Text(vm.formattedEthBalance, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(vm.formattedBtcBalance, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(4.dp))
             if (s.ethAddress.isNotEmpty()) {
                 Text(
@@ -389,6 +390,8 @@ fun SendScreen(vm: WalletViewModel) {
     val s by vm.state.collectAsState()
     val context = LocalContext.current
 
+    BackHandler { vm.clearCompletedTransactions(); vm.navigate(Screen.Home) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader("Send") {
             vm.clearCompletedTransactions()
@@ -490,13 +493,13 @@ fun SendScreen(vm: WalletViewModel) {
                 Row(modifier = Modifier.padding(vertical = 8.dp)) {
                     Text("Estimated fee", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.weight(1f))
-                    Text(vm.sendFee, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text(vm.sendFee, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Divider(color = MaterialTheme.colorScheme.outline)
                 Row(modifier = Modifier.padding(vertical = 8.dp)) {
                     Text("Network", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.weight(1f))
-                    Text(vm.sendNetworkLabel, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text(vm.sendNetworkLabel, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -562,7 +565,7 @@ fun TxCard(tx: PendingTx, vm: WalletViewModel, context: Context) {
 
         Spacer(Modifier.height(4.dp))
         Row {
-            Text(tx.amount, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            Text(tx.amount, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.width(4.dp))
             Text("to", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.width(4.dp))
@@ -614,6 +617,8 @@ fun TxCard(tx: PendingTx, vm: WalletViewModel, context: Context) {
 fun ReceiveScreen(vm: WalletViewModel) {
     val s by vm.state.collectAsState()
     val context = LocalContext.current
+
+    BackHandler { vm.navigate(Screen.Home) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -677,6 +682,8 @@ fun ReceiveScreen(vm: WalletViewModel) {
 fun SignMessageScreen(vm: WalletViewModel) {
     val s by vm.state.collectAsState()
     val context = LocalContext.current
+
+    BackHandler { vm.navigate(Screen.Home) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader("Sign message") { vm.navigate(Screen.Home) }
@@ -751,7 +758,7 @@ fun SignMessageScreen(vm: WalletViewModel) {
                         )
                     }
                     Spacer(Modifier.height(8.dp))
-                    Text(signature, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                    Text(signature, fontSize = 11.sp, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurface)
                 }
 
                 Spacer(Modifier.height(4.dp))

@@ -68,7 +68,7 @@ fun ScreenHeader(title: String, onBack: () -> Unit) {
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         Divider(color = MaterialTheme.colorScheme.outline)
     }
@@ -161,7 +161,7 @@ fun SeedWordCell(index: Int, word: String) {
             modifier = Modifier.width(18.dp)
         )
         Spacer(Modifier.width(6.dp))
-        Text(word, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(word, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -301,11 +301,11 @@ fun AssetRow(
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text(name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 Text(network, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(amount, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text(amount, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 Text(usd, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
