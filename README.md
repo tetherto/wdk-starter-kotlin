@@ -56,6 +56,37 @@ To install on a connected device:
 ./gradlew installDebug
 ```
 
+### Starting the Emulator
+
+Make sure the Android SDK tools are on your `PATH` (add this to your `~/.zshrc` or shell profile):
+
+```bash
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+```
+
+List your available virtual devices and start one in the background:
+
+```bash
+emulator -list-avds
+emulator -avd Pixel_9 &
+```
+
+Wait for the emulator to finish booting, then install the app:
+
+```bash
+adb wait-for-device
+./gradlew installDebug
+```
+
+### Running the App
+
+Launch the app on the emulator (or a connected device):
+
+```bash
+adb shell monkey -p to.tether.wdk.starter -c android.intent.category.LAUNCHER 1
+```
+
 ## Architecture
 
 The app follows MVVM with Jetpack Compose:
