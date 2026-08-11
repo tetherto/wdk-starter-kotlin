@@ -82,6 +82,36 @@ class WalletViewModel(private val context: Context) : ViewModel() {
     private var encryptedSeed = ""
     private var isRefreshingBalance = false
 
+    // NOTE: must be declared before the init block below — Kotlin runs property
+    // initializers and init blocks in declaration order, and the restore coroutine
+    // (launched on Dispatchers.Main.immediate) reads this synchronously during
+    // construction. Declared after init, it would still be null at that point.
+    private val wdkConfig = """
+    {
+      "networks": {
+        "sepolia": {
+            "blockchain": "sepolia",
+            "config": {
+            "chainId": 11155111,
+              "provider": "https://ethereum-sepolia.publicnode.com"
+            }
+        },
+        "bitcoin": {
+          "blockchain": "bitcoin",
+          "config": {
+          "client": {
+            "type": "blockbook-http",
+            "clientConfig": {
+              "url": "https://blockbook.tbtc-1.zelcore.io/api"
+            }
+          },
+          "network": "testnet"
+          }
+        }
+      }
+    }
+    """.trimIndent()
+
     init {
         val savedKey = prefs.getString("encryptionKey", null)
         val savedSeed = prefs.getString("encryptedSeed", null)
@@ -116,32 +146,6 @@ class WalletViewModel(private val context: Context) : ViewModel() {
     private fun clearCredentials() {
         prefs.edit().clear().apply()
     }
-
-    private val wdkConfig = """
-    {
-      "networks": {
-        "sepolia": {
-            "blockchain": "sepolia",
-            "config": {
-            "chainId": 11155111,
-              "provider": "https://ethereum-sepolia.publicnode.com"
-            }
-        },
-        "bitcoin": {
-          "blockchain": "bitcoin",
-          "config": {
-          "client": {
-            "type": "blockbook-http",
-            "clientConfig": {
-              "url": "https://blockbook.tbtc-1.zelcore.io/api"
-            }
-          },
-          "network": "testnet"
-          }
-        }
-      }
-    }
-    """.trimIndent()
 
     private fun getOrCreateClient(): WdkCore {
         return wdkCore ?: WdkCore(context).also { wdkCore = it }

@@ -1,6 +1,6 @@
 # WDK Starter Kotlin
 
-A sample Android wallet app built with [Tether WDK](https://github.com/niclas-nickleby/wdk-core-kotlin) (Wallet Development Kit). This app demonstrates how to integrate `wdk-core-kotlin` into a Jetpack Compose Android application, supporting both **Ethereum (Sepolia testnet)** and **Bitcoin (testnet)**.
+A sample Android wallet app built with [Tether WDK](https://github.com/tetherto/wdk-core-kotlin) (Wallet Development Kit). This app demonstrates how to integrate `wdk-core-kotlin` into a Jetpack Compose Android application, supporting both **Ethereum (Sepolia testnet)** and **Bitcoin (testnet)**.
 
 ## Features
 
@@ -32,17 +32,15 @@ Tether/
 
 ### First-Time Setup
 
-1. **Build the WDK bundle** (if not already done):
-
-```bash
-cd ../wdk-core-kotlin/js
-npm install
-npm run generate
-```
+1. **Clone both repos** side by side (see the layout above).
 
 2. **Open in Android Studio**: Open the `wdk-starter-kotlin` folder in Android Studio. Gradle sync will automatically pick up the local `wdk-core-kotlin` module.
 
 3. **Run the app**: Select a device/emulator (API 33+) and press Run.
+
+The first build takes a while: the `wdk-core-kotlin` module automatically installs its JS dependencies, generates the WDK worklet bundle (Node.js required), and downloads the BareKit runtime (jar + native libraries, a few hundred MB, one-time) from the [bare-kit releases](https://github.com/holepunchto/bare-kit/releases). Subsequent builds reuse all of it.
+
+> **Note**: If Android Studio shows unresolved `to.holepunch.bare.kit` imports right after cloning, run a build once (`./gradlew assembleDebug`) — the BareKit download happens at build time, not during Gradle sync.
 
 ### Building from Terminal
 
