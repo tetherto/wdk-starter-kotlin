@@ -18,7 +18,7 @@ A sample Android wallet app built with [Tether WDK](https://github.com/tetherto/
 - **JDK 17**
 - **Android SDK 35** (compileSdk)
 - **Android Emulator** or physical device running API 33+
-- **Node.js** (for building the WDK worklet bundle)
+- **Node.js ≥ 20.19** (for building the WDK worklet bundle — several transitive WDK dependencies require this minimum. Building with an older Node version fails with a confusing `rolldown` native-binding error rather than a clear version-mismatch message.)
 
 ## Project Setup
 
@@ -102,6 +102,34 @@ The app is configured for testnet use:
 |---------|-----------|----------|
 | Sepolia | Ethereum (testnet) | ethereum-sepolia.publicnode.com |
 | Bitcoin | Bitcoin (testnet) | blockbook.tbtc-1.zelcore.io |
+
+## Getting Testnet Funds
+
+New wallets start with a zero balance. Fund them using these faucets:
+
+- **Sepolia ETH:** [Sepolia PoW Faucet](https://sepolia-faucet.pk910.de/) (no mainnet balance or social account required — mines in-browser)
+- **Bitcoin testnet:** [bitcoinfaucet.uo1.net](https://bitcoinfaucet.uo1.net/) or [coinfaucet.eu](https://coinfaucet.eu/en/btc-testnet/)
+
+> **Important**: this app's Bitcoin config points at **testnet3** (`blockbook.tbtc-1.zelcore.io`), not testnet4. The two networks are separate chains that share the same `tb1...` address format, so funding the wrong one will silently leave your balance at zero with no error. Make sure any faucet or explorer you use is explicitly testnet3.
+
+Verify funds landed using a block explorer before trusting the in-app balance, since ETH confirms in seconds but BTC testnet blocks can take much longer and are inconsistent:
+
+- ETH: [sepolia.etherscan.io](https://sepolia.etherscan.io)
+- BTC: [blockbook.tbtc-1.zelcore.io](https://blockbook.tbtc-1.zelcore.io) (the same indexer the app itself queries)
+
+## Security Notes
+
+This starter app is a **reference implementation for integrating `wdk-core-kotlin`**, not a production-hardened wallet. The following simplifications are intentional design choices for sample-app clarity, not oversights, and are documented here so they are not mistaken for undisclosed vulnerabilities:
+
+- **Key storage**: the encryption key and the encrypted seed are both stored together in Android `SharedPreferences` (`wdk_wallet`). This is not equivalent to hardware-backed key storage.
+- **Backups**: `android:allowBackup="true"` is set in the manifest. Combined with the storage choice above, both the encryption key and the encrypted seed could be included in the same Android backup (e.g. via Auto Backup or `adb backup`).
+
+Production integrations should use `EncryptedSharedPreferences` backed by the Android Keystore, and should independently review their backup policy (e.g. `android:allowBackup="false"` or explicit backup-rule exclusions) rather than relying on this starter's configuration.
+
+## Known Limitations
+
+- **Transaction status**: the app shows "Transaction broadcast!" once `sendTransaction` returns a hash. This confirms the transaction was successfully submitted to the network — it does **not** mean the transaction has been mined or confirmed on-chain. Always verify actual confirmation via a block explorer for anything beyond casual testing.
+- **Restore failure handling**: a failed wallet restore currently clears saved credentials on any error, including transient network failures, not only invalid/corrupt credentials. This is tracked as a follow-up (see open GitHub issues in this repository).
 
 ## License
 

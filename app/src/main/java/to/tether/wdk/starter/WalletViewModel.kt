@@ -40,7 +40,7 @@ data class PendingTx(
     val statusLabel: String
         get() = when (status) {
             TxStatus.PENDING -> "Pending..."
-            TxStatus.COMPLETED -> "Confirmed"
+            TxStatus.COMPLETED -> "Broadcast"
             TxStatus.FAILED -> "Failed: ${error ?: "Unknown"}"
         }
 }
@@ -436,7 +436,7 @@ class WalletViewModel(private val context: Context) : ViewModel() {
                 )
                 val hash = extractTxHash(result)
                 updateTx(txId, TxStatus.COMPLETED, hash = hash)
-                showToast("Transaction confirmed!", success = true)
+                showToast("Transaction broadcast!", success = true)
                 fetchBalance()
             } catch (e: Exception) {
                 updateTx(txId, TxStatus.FAILED, error = e.message)
