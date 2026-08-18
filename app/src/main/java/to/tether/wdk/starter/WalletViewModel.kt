@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import to.tether.wdk.core.WdkCore
 import java.math.BigDecimal
+import java.util.Locale
 import java.util.UUID
 
 enum class Screen { Welcome, Create, Import, Home, Send, Receive, Sign }
@@ -568,14 +569,14 @@ class WalletViewModel(private val context: Context) : ViewModel() {
         get() {
             val wei = _state.value.ethBalance.toDoubleOrNull() ?: return "${_state.value.ethBalance} ETH"
             val eth = wei / 1_000_000_000_000_000_000.0
-            return if (eth == 0.0) "0.0000 ETH" else String.format("%.4f ETH", eth)
+            return if (eth == 0.0) "0.0000 ETH" else String.format(Locale.US, "%.4f ETH", eth)
         }
 
     val formattedBtcBalance: String
         get() {
             val satoshis = _state.value.btcBalance.toDoubleOrNull() ?: return "${_state.value.btcBalance} BTC"
             val btc = satoshis / 100_000_000.0
-            return if (btc == 0.0) "0.0000 BTC" else String.format("%.4f BTC", btc)
+            return if (btc == 0.0) "0.0000 BTC" else String.format(Locale.US, "%.4f BTC", btc)
         }
 
     val receiveAddress: String
