@@ -343,8 +343,6 @@ fun HomeScreen(vm: WalletViewModel) {
         ) {
             AssetRow("\u20BF", Color(0xFFF7931A), "Bitcoin", "BTC Testnet", vm.formattedBtcBalance, "$0.00")
             AssetRow("\u039E", Color(0xFF627EEA), "Ethereum", "Sepolia", vm.formattedEthBalance, "$0.00")
-            AssetRow("$", Color(0xFF26A17B), "Tether USD", "ERC20 Sepolia", "0.00 USDT", "$0.00")
-            AssetRow("Au", Color(0xFFC9A033), "Tether Gold", "ERC20 Sepolia", "0.0000 XAUT", "$0.00")
         }
 
         Row(
