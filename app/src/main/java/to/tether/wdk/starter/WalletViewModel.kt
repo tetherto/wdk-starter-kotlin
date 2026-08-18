@@ -286,18 +286,21 @@ class WalletViewModel(private val context: Context) : ViewModel() {
         isRefreshingBalance = true
         viewModelScope.launch {
             try {
-                val ethBal = wdkCore!!.getBalance(network = "sepolia")
-                update { copy(ethBalance = ethBal) }
-            } catch (e: Exception) {
-                android.util.Log.w("WDK", "ETH balance fetch failed: ${e.message}")
+                try {
+                    val ethBal = wdkCore!!.getBalance(network = "sepolia")
+                    update { copy(ethBalance = ethBal) }
+                } catch (e: Exception) {
+                    android.util.Log.w("WDK", "ETH balance fetch failed: ${e.message}")
+                }
+                try {
+                    val btcBal = wdkCore!!.getBalance(network = "bitcoin")
+                    update { copy(btcBalance = btcBal) }
+                } catch (e: Exception) {
+                    android.util.Log.w("WDK", "BTC balance fetch failed: ${e.message}")
+                }
+            } finally {
+                isRefreshingBalance = false
             }
-            try {
-                val btcBal = wdkCore!!.getBalance(network = "bitcoin")
-                update { copy(btcBalance = btcBal) }
-            } catch (e: Exception) {
-                android.util.Log.w("WDK", "BTC balance fetch failed: ${e.message}")
-            }
-            isRefreshingBalance = false
         }
     }
 
