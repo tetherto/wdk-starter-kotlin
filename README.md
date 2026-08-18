@@ -108,14 +108,14 @@ The app is configured for testnet use:
 New wallets start with a zero balance. Fund them using these faucets:
 
 - **Sepolia ETH:** [Sepolia PoW Faucet](https://sepolia-faucet.pk910.de/) (no mainnet balance or social account required — mines in-browser)
-- **Bitcoin testnet:** [bitcoinfaucet.uo1.net](https://bitcoinfaucet.uo1.net/) or [coinfaucet.eu](https://coinfaucet.eu/en/btc-testnet/)
+- **Bitcoin testnet4:** [coinfaucet.eu (testnet4)](https://coinfaucet.eu/en/btc-testnet4/) or [Crypto Chief Testnet4 Faucet](https://crypto-chief.com/faucet/bitcoin-testnet4/)
 
-> **Important**: this app's Bitcoin config points at **testnet3** (`blockbook.tbtc-1.zelcore.io`), not testnet4. The two networks are separate chains that share the same `tb1...` address format, so funding the wrong one will silently leave your balance at zero with no error. Make sure any faucet or explorer you use is explicitly testnet3.
+> **Important**: this app's Bitcoin config points at **testnet4** (`blockbook.tbtc-1.zelcore.io` — confirmed via its `/api/status` endpoint, which reports `chain: testnet4`), not testnet3. The two networks are separate chains that share the same `tb1...` address format, so funding the wrong one will silently leave your balance at zero with no error. Common faucets like `coinfaucet.eu/en/btc-testnet/` and `bitcoinfaucet.uo1.net` serve **testnet3** — use a testnet4-specific faucet instead, such as the ones linked above.
 
 Verify funds landed using a block explorer before trusting the in-app balance, since ETH confirms in seconds but BTC testnet blocks can take much longer and are inconsistent:
 
 - ETH: [sepolia.etherscan.io](https://sepolia.etherscan.io)
-- BTC: [blockbook.tbtc-1.zelcore.io](https://blockbook.tbtc-1.zelcore.io) (the same indexer the app itself queries)
+- BTC: [blockbook.tbtc-1.zelcore.io](https://blockbook.tbtc-1.zelcore.io) (the same testnet4 indexer the app itself queries)
 
 ## Security Notes
 
