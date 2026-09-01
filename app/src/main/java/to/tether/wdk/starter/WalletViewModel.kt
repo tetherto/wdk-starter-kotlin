@@ -124,8 +124,18 @@ class WalletViewModel(private val context: Context) : ViewModel() {
                     val wdk = getOrCreateClient()
                     wdk.initializeWDK(encryptionKey = encryptionKey, encryptedSeed = encryptedSeed, config = wdkConfig)
                     update { copy(isWdkInitialized = true) }
-                    try { val ethAddr = wdk.getAddress(network = "sepolia"); update { copy(ethAddress = ethAddr) } } catch (_: Exception) {}
-                    try { val btcAddr = wdk.getAddress(network = "bitcoin"); update { copy(btcAddress = btcAddr) } } catch (_: Exception) {}
+                    try {
+                        val ethAddr = wdk.getAddress(network = "sepolia")
+                        update { copy(ethAddress = ethAddr) }
+                    } catch (e: Exception) {
+                        android.util.Log.w("WDK", "ETH address fetch failed: ${e.message}")
+                    }
+                    try {
+                        val btcAddr = wdk.getAddress(network = "bitcoin")
+                        update { copy(btcAddress = btcAddr) }
+                    } catch (e: Exception) {
+                        android.util.Log.w("WDK", "BTC address fetch failed: ${e.message}")
+                    }
                     update { copy(currentScreen = Screen.Home, isLoading = false, statusText = "") }
                     fetchBalance()
                 } catch (e: Exception) {
@@ -210,11 +220,15 @@ class WalletViewModel(private val context: Context) : ViewModel() {
             try {
                 val ethAddr = wdk.getAddress(network = "sepolia")
                 update { copy(ethAddress = ethAddr) }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.w("WDK", "ETH address fetch failed: ${e.message}")
+            }
             try {
                 val btcAddr = wdk.getAddress(network = "bitcoin")
                 update { copy(btcAddress = btcAddr) }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.w("WDK", "BTC address fetch failed: ${e.message}")
+            }
 
             update { copy(currentScreen = Screen.Home, isLoading = false, statusText = "") }
             fetchBalance()
@@ -269,11 +283,15 @@ class WalletViewModel(private val context: Context) : ViewModel() {
             try {
                 val ethAddr = wdk.getAddress(network = "sepolia")
                 update { copy(ethAddress = ethAddr) }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.w("WDK", "ETH address fetch failed: ${e.message}")
+            }
             try {
                 val btcAddr = wdk.getAddress(network = "bitcoin")
                 update { copy(btcAddress = btcAddr) }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.w("WDK", "BTC address fetch failed: ${e.message}")
+            }
 
             update { copy(currentScreen = Screen.Home, isLoading = false, statusText = "") }
             fetchBalance()
