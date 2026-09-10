@@ -22,6 +22,8 @@ enum class Network { ETH, BTC }
 
 enum class TxStatus { PENDING, COMPLETED, FAILED }
 
+internal fun isValidVerificationResult(result: Any): Boolean = result is Boolean && result
+
 data class PendingTx(
     val id: String = UUID.randomUUID().toString(),
     val network: Network,
@@ -542,7 +544,7 @@ class WalletViewModel(private val context: Context) : ViewModel() {
                     accountIndex = 0,
                     args = argsArray.toString()
                 )
-                val valid = result == true || result.toString() == "true" || result.toString() == "1"
+                val valid = isValidVerificationResult(result)
                 update { copy(verifyResult = valid, isLoading = false, statusText = "") }
                 showToast(if (valid) "Signature is valid" else "Signature is invalid", success = valid)
             } catch (e: Exception) {
