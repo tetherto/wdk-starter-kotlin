@@ -2,6 +2,8 @@
 
 A sample Android wallet app built with [Tether WDK](https://github.com/tetherto/wdk-core-kotlin) (Wallet Development Kit). This app demonstrates how to integrate `wdk-core-kotlin` into a Jetpack Compose Android application, supporting both **Ethereum (Sepolia testnet)** and **Bitcoin (testnet)**.
 
+For the broader WDK ecosystem, see the [WDK documentation](https://docs.wdk.tether.io/).
+
 ## Features
 
 - Create a new wallet with a 12-word seed phrase
