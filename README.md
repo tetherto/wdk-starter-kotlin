@@ -40,7 +40,7 @@ Tether/
 
 3. **Run the app**: Select a device/emulator (API 33+) and press Run.
 
-The first build takes a while: the `wdk-core-kotlin` module automatically installs its JS dependencies, generates the WDK worklet bundle (Node.js required), and downloads the BareKit runtime (jar + native libraries, a few hundred MB, one-time) from the [bare-kit releases](https://github.com/holepunchto/bare-kit/releases). Subsequent builds reuse all of it.
+The first build takes a while: the `wdk-core-kotlin` module automatically installs its JS dependencies, generates the WDK worklet bundle (Node.js required), and downloads the BareKit runtime (jar + native libraries, a few hundred MB, one-time) from the [bare-kit releases](https://github.com/holepunchto/bare-kit/releases). It fetches the newest BareKit **2.x** release with the **V8** engine; BareKit 3.x releases publish no prebuilds and cannot be used with this line. Subsequent builds reuse all of it.
 
 > **Note**: If Android Studio shows unresolved `to.holepunch.bare.kit` imports right after cloning, run a build once (`./gradlew assembleDebug`) — the BareKit download happens at build time, not during Gradle sync.
 
@@ -55,6 +55,19 @@ To install on a connected device:
 ```bash
 ./gradlew installDebug
 ```
+
+### Build Options
+
+`-P` properties passed to the starter's `./gradlew` also reach the `wdk-core-kotlin` module, because `settings.gradle` includes it as a plain multi-project Gradle include (`include ':wdk-core-kotlin'` with its `projectDir` pointing at `../wdk-core-kotlin`).
+
+| Property | Meaning |
+|----------|---------|
+| `-PbareKitTag=<tag>` | Pin a BareKit release. Default: the newest BareKit 2.x release (v2.5.5 at the time of writing). The value must be a `v2.<minor>.<patch>` tag; anything else is rejected with a message pointing to [tetherto/wdk-worklet-bundler#84](https://github.com/tetherto/wdk-worklet-bundler/issues/84) (phase 3b). |
+| `-PbareKitDir=<path>` | Use a pre-provisioned BareKit copy (jar + JNI libraries) instead of downloading one, including your own BareKit build (QuickJS or JSC). Unsupported, at your own risk. |
+
+Delete `../wdk-core-kotlin/libs/bare-kit/` to force a re-fetch, for example after changing `-PbareKitTag`.
+
+The core's `js/wdk.config.js` keeps `convertEsmToCjs: true`, and its `js/package.json` pins the bundler, `pear-wrk-wdk`, and a `bare-node-runtime` 1.5.0 override. The ESM-to-CJS conversion is harmless on V8 (the only engine the core ships) and is kept so the same bundle also runs on CJS-only engines. The pins are what the starter actually depends on: dropping the `bare-node-runtime` override makes the worklet abort on its first request with `ADDON_NOT_FOUND`, and bundle validation errors come from dependency drift, not from `convertEsmToCjs`.
 
 ### Starting the Emulator
 
