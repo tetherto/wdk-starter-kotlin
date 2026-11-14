@@ -16,7 +16,7 @@ For the broader WDK ecosystem, see the [WDK documentation](https://docs.wdk.teth
 
 ## Prerequisites
 
-- **Android Studio** (Hedgehog or newer)
+- **Android Studio** Koala Feature Drop (2024.1.2) or newer
 - **JDK 17**
 - **Android SDK 35** (compileSdk)
 - **Android Emulator** or physical device running API 33+
@@ -63,7 +63,7 @@ To install on a connected device:
 | Property | Meaning |
 |----------|---------|
 | `-PbareKitTag=<tag>` | Pin a BareKit release. Default: the newest BareKit 2.x release (v2.5.5 at the time of writing). The value must be a `v2.<minor>.<patch>` tag; anything else is rejected with a message pointing to [tetherto/wdk-worklet-bundler#84](https://github.com/tetherto/wdk-worklet-bundler/issues/84) (phase 3b). |
-| `-PbareKitDir=<path>` | Use a pre-provisioned BareKit copy (jar + JNI libraries) instead of downloading one, including your own BareKit build (QuickJS or JSC). Unsupported, at your own risk. |
+| `-PbareKitDir=<path>` | Use a pre-provisioned BareKit copy (jar + JNI libraries) instead of downloading one, including your own BareKit build. The directory is never downloaded into or overwritten; the build fails if `classes.jar` is missing there. QuickJS was validated on the core on 2026-11-13 and is not recommended; engine-specific issues are yours to own. JSC on Android has not been tried. See the [core README, Step 2](https://github.com/tetherto/wdk-core-kotlin#step-2-barekit-android-runtime-fetched-automatically). |
 
 Delete `../wdk-core-kotlin/libs/bare-kit/` to force a re-fetch, for example after changing `-PbareKitTag`.
 
@@ -144,7 +144,8 @@ Production integrations should use `EncryptedSharedPreferences` backed by the An
 ## Known Limitations
 
 - **Transaction status**: the app shows "Transaction broadcast!" once `sendTransaction` returns a hash. This confirms the transaction was successfully submitted to the network — it does **not** mean the transaction has been mined or confirmed on-chain. Always verify actual confirmation via a block explorer for anything beyond casual testing.
-- **Restore failure handling**: a failed wallet restore currently clears saved credentials on any error, including transient network failures, not only invalid/corrupt credentials. This is tracked as a follow-up (see open GitHub issues in this repository).
+- **Restore failure handling**: a failed wallet restore currently clears saved credentials on any `initializeWDK` error (for example a worklet or configuration failure), not only when the saved seed cannot be decrypted. A network outage alone does not trigger it. Tracked in [#3](https://github.com/tetherto/wdk-starter-kotlin/issues/3).
+- **No local balance check before sending**: the send flow submits without comparing the amount to the available balance, so an insufficient-funds error only surfaces after the round trip through the worklet and the RPC node. Tracked in [#6](https://github.com/tetherto/wdk-starter-kotlin/issues/6).
 
 ## License
 

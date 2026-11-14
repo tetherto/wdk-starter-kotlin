@@ -26,10 +26,9 @@ This repository is part of the Tether WDK (Wallet Development Kit) ecosystem. It
 - **License:** The project is licensed under Apache 2.0 (see `LICENSE`).
 
 ## Development Workflow
-1.  **Build the WDK bundle** (first time only): `cd ../wdk-core-kotlin/js && npm install && npm run generate`
-2.  **Sync:** Open in Android Studio (Hedgehog or newer); Gradle sync picks up the local `wdk-core-kotlin` module.
-3.  **Build:** `./gradlew assembleDebug`
-4.  **Run:** `./gradlew installDebug` on a device/emulator running API 33+.
+1.  **Sync:** Open in Android Studio Koala Feature Drop (2024.1.2) or newer; Gradle sync picks up the local `wdk-core-kotlin` module.
+2.  **Build once:** `./gradlew assembleDebug`. The core's Gradle build runs `npm install` and the bundler itself and fetches BareKit, so there is nothing to run by hand in `../wdk-core-kotlin/js`.
+3.  **Run:** `./gradlew installDebug` on a device/emulator running API 33+.
 
 ## Key Files
 - `app/src/main/java/to/tether/wdk/starter/MainActivity.kt`: Entry point; sets up the dark theme and hosts the app.
