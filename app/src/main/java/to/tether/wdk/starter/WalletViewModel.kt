@@ -42,14 +42,24 @@ internal fun isUnusableCredentialsError(error: Throwable): Boolean =
     error is WdkError.RpcError && error.message.startsWith(SEED_DECRYPTION_FAILURE_PREFIX)
 
 /**
- * Tells whether a send amount is larger than the available balance.
+ * Tells whether a send amount is greater than zero.
+ *
+ * @param amount The amount to send, in the smallest unit (wei or satoshis).
+ * @return `true` if the amount is positive; `false` for zero and negative amounts.
+ */
+internal fun isPositiveAmount(amount: String): Boolean =
+    BigDecimal(amount) > BigDecimal.ZERO
+
+/**
+ * Tells whether a send costs more than the available balance.
  *
  * @param amount The amount to send, in the smallest unit (wei or satoshis).
  * @param balance The available balance, in the smallest unit.
- * @return `true` if the amount is larger than the balance.
+ * @param fee The quoted network fee, in the smallest unit, or `null` to compare the amount alone.
+ * @return `true` if the amount, plus the fee when given, is larger than the balance.
  */
-internal fun exceedsBalance(amount: String, balance: String): Boolean =
-    BigDecimal(amount) > BigDecimal(balance)
+internal fun exceedsBalance(amount: String, balance: String, fee: String? = null): Boolean =
+    BigDecimal(amount) + BigDecimal(fee ?: "0") > BigDecimal(balance)
 
 data class PendingTx(
     val id: String = UUID.randomUUID().toString(),
@@ -474,9 +484,20 @@ class WalletViewModel(private val context: Context) : ViewModel() {
             return
         }
 
+        if (!isPositiveAmount(valueInSmallestUnit)) {
+            showToast("Amount must be greater than 0")
+            return
+        }
+
         val balance = if (s.sendNetwork == Network.ETH) s.ethBalance else s.btcBalance
-        if (exceedsBalance(valueInSmallestUnit, balance)) {
-            showToast("Amount exceeds available balance")
+        val quotedFee = if (s.sendNetwork == Network.ETH) s.quotedFeeEth else s.quotedFeeBtc
+        val balanceError = when {
+            exceedsBalance(valueInSmallestUnit, balance) -> "Amount exceeds available balance"
+            exceedsBalance(valueInSmallestUnit, balance, quotedFee) -> "Amount plus network fee exceeds available balance"
+            else -> null
+        }
+        if (balanceError != null) {
+            showToast(balanceError)
             fetchBalance()
             return
         }

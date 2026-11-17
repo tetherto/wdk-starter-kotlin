@@ -85,4 +85,60 @@ class WalletViewModelTest {
         assertFalse(fullBalance)
         assertFalse(partOfBalance)
     }
+
+    @Test
+    fun rejectsZeroAndNegativeAmounts() {
+        // Arrange:
+        val zero = "0"
+        val negative = "-1"
+
+        // Act:
+        val zeroIsPositive = isPositiveAmount(zero)
+        val negativeIsPositive = isPositiveAmount(negative)
+
+        // Assert:
+        assertFalse(zeroIsPositive)
+        assertFalse(negativeIsPositive)
+    }
+
+    @Test
+    fun acceptsTheSmallestUnitAsAnAmount() {
+        // Arrange:
+        val oneSatoshi = "1"
+
+        // Act:
+        val positive = isPositiveAmount(oneSatoshi)
+
+        // Assert:
+        assertTrue(positive)
+    }
+
+    @Test
+    fun countsTheQuotedFeeAgainstTheBalance() {
+        // Arrange:
+        val balanceInWei = "137800000000000000"
+        val feeInWei = "294000"
+        val balanceMinusFee = "137799999999706000"
+        val oneWeiTooMuch = "137799999999706001"
+
+        // Act:
+        val affordable = exceedsBalance(amount = balanceMinusFee, balance = balanceInWei, fee = feeInWei)
+        val tooMuch = exceedsBalance(amount = oneWeiTooMuch, balance = balanceInWei, fee = feeInWei)
+
+        // Assert:
+        assertFalse(affordable)
+        assertTrue(tooMuch)
+    }
+
+    @Test
+    fun comparesTheAmountAloneWhenNoFeeIsQuoted() {
+        // Arrange:
+        val balanceInSatoshis = "450000"
+
+        // Act:
+        val exceeds = exceedsBalance(amount = "450000", balance = balanceInSatoshis, fee = null)
+
+        // Assert:
+        assertFalse(exceeds)
+    }
 }
