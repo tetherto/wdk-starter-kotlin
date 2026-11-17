@@ -63,7 +63,7 @@ To install on a connected device:
 | Property | Meaning |
 |----------|---------|
 | `-PbareKitTag=<tag>` | Pin a BareKit release. Default: the newest BareKit 2.x release (v2.5.5 at the time of writing). The value must be a `v2.<minor>.<patch>` tag; anything else is rejected with a message pointing to [tetherto/wdk-worklet-bundler#84](https://github.com/tetherto/wdk-worklet-bundler/issues/84) (phase 3b). |
-| `-PbareKitDir=<path>` | Use a pre-provisioned BareKit copy (jar + JNI libraries) instead of downloading one, including your own BareKit build. The directory is never downloaded into or overwritten; the build fails if `classes.jar` is missing there. QuickJS was validated on the core on 2026-11-13 and is not recommended; engine-specific issues are yours to own. JSC on Android has not been tried. See the [core README, Step 2](https://github.com/tetherto/wdk-core-kotlin#step-2-barekit-android-runtime-fetched-automatically). |
+| `-PbareKitDir=<path>` | Use a pre-provisioned BareKit copy (jar + JNI libraries) instead of downloading one, including your own BareKit build. The directory is never downloaded into or overwritten; the build fails if `classes.jar` is missing there. QuickJS was validated on the core on 2026-11-16 and is not recommended; engine-specific issues are yours to own. JSC on Android has not been tried. See the [core README, Step 2](https://github.com/tetherto/wdk-core-kotlin#step-2-barekit-android-runtime-fetched-automatically). |
 
 Delete `../wdk-core-kotlin/libs/bare-kit/` to force a re-fetch, for example after changing `-PbareKitTag`.
 
