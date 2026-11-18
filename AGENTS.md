@@ -26,10 +26,9 @@ This repository is part of the Tether WDK (Wallet Development Kit) ecosystem. It
 - **License:** The project is licensed under Apache 2.0 (see `LICENSE`).
 
 ## Development Workflow
-1.  **Build the WDK bundle** (first time only): `cd ../wdk-core-kotlin/js && npm install && npm run generate`
-2.  **Sync:** Open in Android Studio (Hedgehog or newer); Gradle sync picks up the local `wdk-core-kotlin` module.
-3.  **Build:** `./gradlew assembleDebug`
-4.  **Run:** `./gradlew installDebug` on a device/emulator running API 33+.
+1.  **Sync:** Open in Android Studio Koala Feature Drop (2024.1.2) or newer; Gradle sync picks up the local `wdk-core-kotlin` module.
+2.  **Build once:** `./gradlew assembleDebug`. The core's Gradle build runs `npm install` and the bundler itself and fetches BareKit, so there is nothing to run by hand in `../wdk-core-kotlin/js`.
+3.  **Run:** `./gradlew installDebug` on a device/emulator running API 33+.
 
 ## Key Files
 - `app/src/main/java/to/tether/wdk/starter/MainActivity.kt`: Entry point; sets up the dark theme and hosts the app.
@@ -44,4 +43,4 @@ This repository is part of the Tether WDK (Wallet Development Kit) ecosystem. It
 - **Key Library:** `WdkCore` from `wdk-core-kotlin` — wallet creation/import (12-word mnemonic), address derivation, balance queries, fee estimation, sending transactions, message signing/verification.
 - **Persistence:** The encryption key and encrypted seed are stored in `SharedPreferences` (`wdk_wallet`). This is sample-app simplicity, not a production pattern — do not extend it with additional secrets without flagging the security implications.
 - **Explorers:** Confirmed transactions link to `sepolia.etherscan.io` (ETH) and `blockbook.tbtc-1.zelcore.io` (BTC).
-- **Testing:** No test suite is currently configured; verify changes by building (`./gradlew assembleDebug`) and running the app on an API 33+ emulator or device.
+- **Testing:** JUnit 4 unit tests live in `app/src/test/java/to/tether/wdk/starter/` (`WalletViewModelTest.kt`, currently 2 tests covering typed `verify` results, added in PR #13). Run them with `./gradlew :app:testDebugUnitTest`. There are no instrumented or UI tests; verify UI changes by building (`./gradlew assembleDebug`) and running the app on an API 33+ emulator or device.
