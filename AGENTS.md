@@ -12,7 +12,7 @@ This repository is part of the Tether WDK (Wallet Development Kit) ecosystem. It
 - **Build System:** Gradle (Groovy DSL).
   - Build: `./gradlew assembleDebug`
   - Install on device/emulator: `./gradlew installDebug`
-- **Wallet SDK:** `wdk-core-kotlin`, referenced as a local Gradle module expected at `../wdk-core-kotlin` (see `settings.gradle`).
+- **Wallet SDK:** `wdk-core-kotlin`, referenced as a local Gradle module expected at `../wdk-core-kotlin` (see `settings.gradle`). Starter release `v0.9.0` pairs with `wdk-core-kotlin` `v0.9.0` (`git clone --branch v0.9.0` for both repos); Gradle does not enforce the version.
 - **QR Codes:** `com.google.zxing:core`.
 - **JDK:** 17 is required.
 

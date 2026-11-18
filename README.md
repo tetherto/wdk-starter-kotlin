@@ -20,7 +20,7 @@ For the broader WDK ecosystem, see the [WDK documentation](https://docs.wdk.teth
 - **JDK 17**
 - **Android SDK 35** (compileSdk)
 - **Android Emulator** or physical device running API 33+
-- **Node.js ≥ 20.19** (for building the WDK worklet bundle — several transitive WDK dependencies require this minimum. Building with an older Node version fails with a confusing `rolldown` native-binding error rather than a clear version-mismatch message.)
+- **Node.js 22.21+ or 24.9+** (for building the WDK worklet bundle — the pinned `@tetherto/wdk-worklet-bundler` declares `^22.21.0 || >=24.9.0`, so Node 23 and Node 24.0 to 24.8 are outside the supported range. Building with an older Node version fails with a confusing `rolldown` native-binding error rather than a clear version-mismatch message.)
 
 ## Project Setup
 
@@ -34,7 +34,14 @@ Tether/
 
 ### First-Time Setup
 
-1. **Clone both repos** side by side (see the layout above).
+1. **Clone both repos** side by side at the matching release tag (see the layout above). Starter `v0.9.0` builds against `wdk-core-kotlin` `v0.9.0`:
+
+   ```bash
+   git clone --branch v0.9.0 https://github.com/tetherto/wdk-core-kotlin.git
+   git clone --branch v0.9.0 https://github.com/tetherto/wdk-starter-kotlin.git
+   ```
+
+   The starter builds whatever is checked out in `../wdk-core-kotlin`; Gradle does not enforce the version, so keep both repos on the same tag. The `main` branches may be ahead of the release.
 
 2. **Open in Android Studio**: Open the `wdk-starter-kotlin` folder in Android Studio. Gradle sync will automatically pick up the local `wdk-core-kotlin` module.
 
