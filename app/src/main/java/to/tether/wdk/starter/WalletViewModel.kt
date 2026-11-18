@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import to.tether.wdk.core.WdkCore
+import to.tether.wdk.core.WdkError
 import java.math.BigDecimal
 import java.util.Locale
 import java.util.UUID
@@ -23,6 +25,41 @@ enum class Network { ETH, BTC }
 enum class TxStatus { PENDING, COMPLETED, FAILED }
 
 internal fun isValidVerificationResult(result: Any): Boolean = result is Boolean && result
+
+/** Start of the worklet's error message when the saved seed cannot be decrypted with the saved key. */
+private const val SEED_DECRYPTION_FAILURE_PREFIX = "Failed to decrypt seed"
+
+/**
+ * Tells whether a failed wallet restore proves that the saved credentials are unusable.
+ *
+ * The worklet reports a failed decryption with the `BAD_REQUEST` code, which it also uses for
+ * configuration and validation errors, so the message prefix is the only discriminator.
+ *
+ * @param error The error thrown while restoring the wallet.
+ * @return `true` only for a seed decryption failure; `false` for every other error.
+ */
+internal fun isUnusableCredentialsError(error: Throwable): Boolean =
+    error is WdkError.RpcError && error.message.startsWith(SEED_DECRYPTION_FAILURE_PREFIX)
+
+/**
+ * Tells whether a send amount is greater than zero.
+ *
+ * @param amount The amount to send, in the smallest unit (wei or satoshis).
+ * @return `true` if the amount is positive; `false` for zero and negative amounts.
+ */
+internal fun isPositiveAmount(amount: String): Boolean =
+    BigDecimal(amount) > BigDecimal.ZERO
+
+/**
+ * Tells whether a send costs more than the available balance.
+ *
+ * @param amount The amount to send, in the smallest unit (wei or satoshis).
+ * @param balance The available balance, in the smallest unit.
+ * @param fee The quoted network fee, in the smallest unit, or `null` to compare the amount alone.
+ * @return `true` if the amount, plus the fee when given, is larger than the balance.
+ */
+internal fun exceedsBalance(amount: String, balance: String, fee: String? = null): Boolean =
+    BigDecimal(amount) + BigDecimal(fee ?: "0") > BigDecimal(balance)
 
 data class PendingTx(
     val id: String = UUID.randomUUID().toString(),
@@ -141,12 +178,19 @@ class WalletViewModel(private val context: Context) : ViewModel() {
                     }
                     update { copy(currentScreen = Screen.Home, isLoading = false, statusText = "") }
                     fetchBalance()
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    prefs.edit().clear().apply()
-                    encryptionKey = ""
-                    encryptedSeed = ""
                     update { copy(isLoading = false, statusText = "") }
-                    showToast("Failed to restore wallet: ${e.message}")
+                    if (isUnusableCredentialsError(e)) {
+                        clearCredentials()
+                        encryptionKey = ""
+                        encryptedSeed = ""
+                        showToast("Failed to restore wallet: ${e.message}")
+                    } else {
+                        android.util.Log.w("WDK", "Wallet restore failed, saved credentials kept: ${e.message}")
+                        showToast("Could not restore wallet: ${e.message}. Your saved wallet was kept, restart the app to retry.")
+                    }
                 }
             }
         }
@@ -437,6 +481,24 @@ class WalletViewModel(private val context: Context) : ViewModel() {
         val decimals = if (s.sendNetwork == Network.ETH) 18 else 8
         val valueInSmallestUnit = toSmallestUnit(amount, decimals) ?: run {
             showToast("Invalid amount")
+            return
+        }
+
+        if (!isPositiveAmount(valueInSmallestUnit)) {
+            showToast("Amount must be greater than 0")
+            return
+        }
+
+        val balance = if (s.sendNetwork == Network.ETH) s.ethBalance else s.btcBalance
+        val quotedFee = if (s.sendNetwork == Network.ETH) s.quotedFeeEth else s.quotedFeeBtc
+        val balanceError = when {
+            exceedsBalance(valueInSmallestUnit, balance) -> "Amount exceeds available balance"
+            exceedsBalance(valueInSmallestUnit, balance, quotedFee) -> "Amount plus network fee exceeds available balance"
+            else -> null
+        }
+        if (balanceError != null) {
+            showToast(balanceError)
+            fetchBalance()
             return
         }
 

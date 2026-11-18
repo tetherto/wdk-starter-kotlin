@@ -145,8 +145,6 @@ Production integrations should use `EncryptedSharedPreferences` backed by the An
 ## Known Limitations
 
 - **Transaction status**: the app shows "Transaction broadcast!" once `sendTransaction` returns a hash. This confirms the transaction was successfully submitted to the network — it does **not** mean the transaction has been mined or confirmed on-chain. Always verify actual confirmation via a block explorer for anything beyond casual testing.
-- **Restore failure handling**: a failed wallet restore currently clears saved credentials on any `initializeWDK` error (for example a worklet or configuration failure), not only when the saved seed cannot be decrypted. A network outage alone does not trigger it. Tracked in [#3](https://github.com/tetherto/wdk-starter-kotlin/issues/3).
-- **No local balance check before sending**: the send flow submits without comparing the amount to the available balance, so an insufficient-funds error only surfaces after the round trip through the worklet and the RPC node. Tracked in [#6](https://github.com/tetherto/wdk-starter-kotlin/issues/6).
 
 ## License
 

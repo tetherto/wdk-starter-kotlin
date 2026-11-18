@@ -3,6 +3,7 @@ package to.tether.wdk.starter
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import to.tether.wdk.core.WdkError
 
 class WalletViewModelTest {
     @Test
@@ -16,5 +17,128 @@ class WalletViewModelTest {
         assertFalse(isValidVerificationResult("true"))
         assertFalse(isValidVerificationResult("1"))
         assertFalse(isValidVerificationResult(mapOf("valid" to true)))
+    }
+
+    @Test
+    fun treatsSeedDecryptionFailureAsUnusableCredentials() {
+        // Arrange:
+        val error = WdkError.RpcError("BAD_REQUEST", "Failed to decrypt seed: Decryption failed")
+
+        // Act:
+        val unusable = isUnusableCredentialsError(error)
+
+        // Assert:
+        assertTrue(unusable)
+    }
+
+    @Test
+    fun keepsCredentialsOnOtherWorkletErrors() {
+        // Arrange:
+        val sameCodeOtherCause = WdkError.RpcError("BAD_REQUEST", "Invalid networks configuration")
+        val initFailure = WdkError.RpcError("WDK_MANAGER_INIT", "Failed to load WDK")
+        val transportFailure = WdkError.IpcError("Worklet closed")
+
+        // Act:
+        val results = listOf(sameCodeOtherCause, initFailure, transportFailure).map { isUnusableCredentialsError(it) }
+
+        // Assert:
+        assertFalse(results[0])
+        assertFalse(results[1])
+        assertFalse(results[2])
+    }
+
+    @Test
+    fun keepsCredentialsOnErrorsThatDoNotComeFromTheWorklet() {
+        // Arrange:
+        val error = IllegalStateException("Failed to decrypt seed")
+
+        // Act:
+        val unusable = isUnusableCredentialsError(error)
+
+        // Assert:
+        assertFalse(unusable)
+    }
+
+    @Test
+    fun detectsAmountAboveBalanceWithoutLosingPrecision() {
+        // Arrange:
+        val balanceInWei = "137800000000000000"
+        val oneWeiMore = "137800000000000001"
+
+        // Act:
+        val exceeds = exceedsBalance(amount = oneWeiMore, balance = balanceInWei)
+
+        // Assert:
+        assertTrue(exceeds)
+    }
+
+    @Test
+    fun allowsAmountUpToTheFullBalance() {
+        // Arrange:
+        val balanceInSatoshis = "450000"
+
+        // Act:
+        val fullBalance = exceedsBalance(amount = "450000", balance = balanceInSatoshis)
+        val partOfBalance = exceedsBalance(amount = "1000", balance = balanceInSatoshis)
+
+        // Assert:
+        assertFalse(fullBalance)
+        assertFalse(partOfBalance)
+    }
+
+    @Test
+    fun rejectsZeroAndNegativeAmounts() {
+        // Arrange:
+        val zero = "0"
+        val negative = "-1"
+
+        // Act:
+        val zeroIsPositive = isPositiveAmount(zero)
+        val negativeIsPositive = isPositiveAmount(negative)
+
+        // Assert:
+        assertFalse(zeroIsPositive)
+        assertFalse(negativeIsPositive)
+    }
+
+    @Test
+    fun acceptsTheSmallestUnitAsAnAmount() {
+        // Arrange:
+        val oneSatoshi = "1"
+
+        // Act:
+        val positive = isPositiveAmount(oneSatoshi)
+
+        // Assert:
+        assertTrue(positive)
+    }
+
+    @Test
+    fun countsTheQuotedFeeAgainstTheBalance() {
+        // Arrange:
+        val balanceInWei = "137800000000000000"
+        val feeInWei = "294000"
+        val balanceMinusFee = "137799999999706000"
+        val oneWeiTooMuch = "137799999999706001"
+
+        // Act:
+        val affordable = exceedsBalance(amount = balanceMinusFee, balance = balanceInWei, fee = feeInWei)
+        val tooMuch = exceedsBalance(amount = oneWeiTooMuch, balance = balanceInWei, fee = feeInWei)
+
+        // Assert:
+        assertFalse(affordable)
+        assertTrue(tooMuch)
+    }
+
+    @Test
+    fun comparesTheAmountAloneWhenNoFeeIsQuoted() {
+        // Arrange:
+        val balanceInSatoshis = "450000"
+
+        // Act:
+        val exceeds = exceedsBalance(amount = "450000", balance = balanceInSatoshis, fee = null)
+
+        // Assert:
+        assertFalse(exceeds)
     }
 }
